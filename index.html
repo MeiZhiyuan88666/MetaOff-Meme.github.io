@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="MetaOff-Meme">
+  <meta name="keywords" content="multimodal chatbot">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MetaOff-Meme</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="static/images/logo.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+  <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/3.27.0/gradio.js"></script>
+
+</head>
+
+<style>
+  .section {
+    margin-bottom: -30px; /* Adjust this value as needed to reduce the space */
+  }
+  .expandable-card .card-text-container {
+    max-height: 200px;
+    overflow-y: hidden;
+    position: relative;
+  }
+
+  .expandable-card.expanded .card-text-container {
+    max-height: none;
+  }
+
+  .expand-btn {
+    position: relative;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* margin-top: -20px; */
+    /* justify-content: center; */
+    color: #510c75;
+    border-color: transparent;
+  }
+
+  .expand-btn:hover {
+    background-color: rgba(200, 200, 200, 0.8);
+    text-decoration: none;
+    border-color: transparent;
+    color: #510c75;
+  }
+
+  .expand-btn:focus {
+    outline: none;
+    text-decoration: none;
+  }
+
+  .expandable-card:not(.expanded) .card-text-container:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
+  }
+
+  .expandable-card:not(.expanded) .expand-btn {
+    margin-top: -40px;
+  }
+
+  .card-body {
+    padding-bottom: 5px;
+  }
+
+  .vertical-flex-layout {
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .figure-img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .adjustable-font-size {
+    font-size: calc(0.5rem + 2vw);
+  }
+
+  .chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
+    /* overflow-x: hidden; */
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  #gradio pre {
+    background-color: transparent;
+  }
+  
+	/* 使用渐变颜色实现彩虹字体 */
+	.rainbow-text {
+	  background: linear-gradient(to right, #3498db, #2ecc71);
+	  -webkit-background-clip: text;
+	  color: transparent;
+	  display: inline-block;
+	  font-weight: bold;
+	}
+  
+</style>
+
+
+<body>
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title"> <img id="logo" width="5%" src="static/images/logo.png"> <span class="rainbow-text">MetaOff-Meme</span>: A Metaphor-Enriched Benchmark for Meme Offensiveness Detection</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://faculty.dlut.edu.cn/2014011100/zh_CN/index.htm">Bo Xu</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://meizhiyuan88666.github.io/">Chenyuan Wang</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://faculty.dlut.edu.cn/liangzhao/zh_CN/index.htm">Liang Zhao</a><sup>&dagger;1</sup>,
+            </span>
+            <span class="author-block">
+              Chuansen Yuan</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Xinyu Chen</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Jiuyan Sun</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Jianshu Cao</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Xutai Hou</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Xinchen Xiao</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              Yuguan Lin</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://faculty.dlut.edu.cn/linhongfei/zh_CN/index.htm">Hongfei Lin</a><sup>1</sup>
+            </span>
+            <span class="author-block">
+              <a href="https://www.xia.ai/">Feng Xia</a><sup>&dagger;2</sup>,
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Dalian University of Technology,</span>
+            <span class="author-block"><sup>2</sup>School of Computing Technologie RMIT University</span>
+          </div>
+
+		      <div class="is-size-6 publication-authors">
+              <span class="author-block"><sup>&dagger;</sup>Corresponding authors.</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <!-- <span class="link-block">
+                <a href="https://arxiv.org/pdf/2011.12948"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2011.12948"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span> -->
+              <!-- Video Link. -->
+              <!-- <span class="link-block">
+                <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span> -->
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/MeiZhiyuan88666/MateOff_Meme"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+              <!-- Dataset Link. -->
+              <span class="link-block">
+                <a href="https://drive.google.com/file/d/1R4pAiawNSOJnPBPe9_BSnJJlWc1O_gy2/view"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data</span>
+                  </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <div style="text-align: center;">
+          <img id="teaser" width="75%" src="static/images/F1.png">
+        </div><br><br>
+      
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <style>
+            /* 使用渐变颜色实现彩虹字体 */
+            .rainbow-text {
+              background: linear-gradient(to right, #3498db, #2ecc71);
+              -webkit-background-clip: text;
+              color: transparent;
+              display: inline-block;
+              font-weight: bold;
+            }
+          </style>
+          <p>
+            Meme is a popular form of expression among contemporary internet users, often conveying rich emotional content such as
+            humor and satire. In recent years, tasks related to meme sentiment analysis and intent detection garner extensive
+            attention from researchers. However, in the domain of meme offensiveness detection, existing studies largely overlook
+            the critical role of metaphorical features. 🌈To fill this gap, we construct a <span class="rainbow-text">meme
+              offensiveness detection dataset</span>, MetaOff-Meme, with metaphorical annotations, providing valuable resources for
+            advancing research in this field. Furthermore, we
+            propose a metaphor benchmark to evaluate the performance of state-of-the-art (SOTA) vision-language
+            models (VLMs) in meme offensiveness detection. The results indicate that these models still face challenges in analyzing
+            and detecting meme offensiveness, while metaphorical features contribute to improving the performance of meme
+            offensiveness detection.
+            <br>
+          </p>
+          <p style="font-size: 15px; color: #fa0000;">🚨Disclaimer: The examples provided in this article may be disturbing.</p>
+        </div>
+      </div>
+  </div>
+</section>  
+
+<section class="section" id="Highlight">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="beijing" style="background-color:#efeff081;">
+            <div class="column is-five-fifths">
+              <h2 class="title is-3">🔥Highlight</h2>
+              <div class="content has-text-justified">
+                <p style="font-size: 15px;">
+                  <ul>
+                    <li>We construct a novel dataset (<b>MetaOff-Meme</b>) consisting of 3,033 offensive memes enriched with metaphorical
+                      features. It will be publicly released to facilitate research. In addition, we describe the quality control process,
+                      including inter-annotator agreement analysis.</li>
+
+                    <li>To the best of our knowledge, this is the first to propose an offensive meme dataset enriched with extensive
+                      metaphorical annotations. We conduct a comprehensive analysis of the offensive characteristics of
+                      <b>MetaOff-Meme</b> under the influence of metaphors. Our experimental results demonstrate that metaphorical
+                      features can improve the performance of meme offensiveness detection.</li>
+
+                    <li>We propose a novel metaphor benchmark that evaluates the performance of SOTA VLMs on meme offensiveness detection
+                      across four tasks. Furthermore, we report and analyze a range of benchmark results with detailed baselines.</li>
+                  </ul>
+                </p>
+              </div>
+            </div>  
+        </div>
+      </div>
+    </div>
+</section><br>
+
+
+<section class="section" id="MetaOff-Meme-Dataset">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-five-fifths">
+        <h2 class="title is-3"> <span class="rainbow-text">MetaOff-Meme Dataset</span></h2>
+      </div>
+    </div>
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="content has-text-justified">
+            <p>
+              <strong>Meme has becomea popular</strong> medium of expression among internet users, utilizing its multimodal nature to vividly and
+              effectively convey emotions and intentions. However, some memes carry offensive undertones. The abuse of these offensive
+              memes not only causes harm to individuals, but also poses profound negative impacts on social stability, public health,
+              and the healthy development of the online environment. Meanwhile, with the emergence of large models, there is
+              growing attention on whether the content generated by these models aligns with human ethics and values. Since large
+              models may inadvertently generate offensive content, detecting and preventing the potential misuse of offensive memes is
+              of critical importance. However, to evade regulation by online platforms, offensive content in memes is often expressed
+              and disseminated in more implicit ways. These implicit expressions frequently rely on extensive use of metaphors to convey offensiveness. <br>
+
+              <strong>Current models rely solely</strong> on multimodal sentiment analysis methods to identify offensive sentiments in memes, while
+              neglecting the complex metaphorical features inherent within memes, which significantly limits their performance.
+              Therefore, accurately understanding the metaphorical features underlying memes is key to effective offensiveness
+              detection. To improve the performance of offensiveness detection for memes enriched with metaphorical content, we construct
+              MetaOff-Meme consisting of 3,033 image-text pairs with manual annotations. <br>
+
+              (1) <strong>Metaphor Annotation.</strong> MetaOff-Meme defines the syntactic
+              structure of metaphors as: 'A' is as 'relationship' as 'B' and use this structure to expand the metaphors and
+              metaphorical relationships within memes. In this syntactic structure, A and B represent the source domain and target
+              domain of the metaphor, respectively, while the relationship denotes the shared comparative attribute between them.<br>
+
+              (2) <strong>Offensiveness Annotation.</strong>
+              Offensive memes are often presented in the form of humor or self-deprecation, appearing harmless on the surface but
+              potentially embedding biases, discrimination, or malicious intent. The annotation process for meme offensiveness is
+              shown in Figure 2(b). We first determine whether a meme is offensive. Subsequently, we perform fine-grained annotations
+              on offensive memes in terms of offensive topic, level, and scope. <br><br>
+
+              <img id="pipeline" width="105%" src="static/images/F2.png">
+          </div>
+          </p>
+        </div>
+        </b>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="Dataset-Analysis">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+        <h2 class="title is-3"> <span class="rainbow-text">Dataset Analysis</span></h2>
+      </div>
+    </div>
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="content has-text-justified">
+            <p>
+              <strong>During the collection</strong> of offensive memes, we retained non-offensive memes to ensure sample diversity. According to
+              Figure 3(a), offensive memes account for 61% of the total dataset, while non-offensive memes make up the remaining 39%.
+              Further metaphorical analysis reveals that 82% of the samples contain metaphors. Offensive memes with metaphors make up
+              53%, those without metaphors account for 29%, and non-metaphorical memes comprise only 18%. This distribution indicates
+              that the use of metaphors is prevalent in offensive memes.<br>
+
+              <strong>For offensive topics</strong>, as shown in Figure 3(b), gender-related topics account for the highest proportion, which may
+              reflect the relatively high prevalence of such memes on social media platforms. For offensive level, as shown in Figure
+              3(c), the distribution of memes across different levels of offensiveness is relatively balanced, with non-offensive
+              memes accounting for the largest proportion at 39%. Among the remaining categories, slight, moderate, and severe levels
+              exhibit a balanced distribution, suggesting that social media users tend to employ memes with varying degrees of
+              offensiveness to convey harmful content. <br>
+
+              <strong>According to Figure 3(d)</strong>, 73% of offensive memes are directed at specific groups, while the remaining 27% target
+              individuals. This trend may be related to the formation of group dynamics and collective identities on social media
+              platforms, as group-targeted memes are more likely to provoke broader discourse and interactions. <br><br>
+              <img id="pipeline" width="105%" src="static/images/F3.png">
+          </div>
+          </p>
+        </div>
+        </b>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="Experiments">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+        <h2 class="title is-3"> <span class="rainbow-text">Experiments</span></h2>
+      </div>
+    </div>
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="content has-text-justified">
+            <p>
+              We propose four tasks based on MetaOff-Meme to evaluate the performance of meme offensiveness detection. The detailed
+              descriptions of the tasks are as follows:<br>
+
+              (1) <strong>Offensiveness Detection</strong> : a binary classification task to determine whether a meme is offensive. <br>
+              (2) <strong>Offensive Topic Classification</strong>: a task aims to classify offensive memes into fine-grained categories, supporting a
+              deeper understanding of their diversity.<br>
+              (3) <strong>Offensive Level Evaluation</strong>: a task to evaluate the offensiveness level of memes, which helps measure their severity and
+              more precisely assess their potential impact.<br>
+              (4) <strong>Offensive Scope Analysis</strong>: a task to analyze the target scope of offensive memes, uncovering the groups or individuals
+              targeted in their dissemination.<br>
+
+              We select 5 SOTA open-source VLMs as experimental models to explore the current applications of multimodal large models
+              in meme offensiveness detection. The models include Qwen-VL-Chat-7B, LLaVA-v1.5-7B, MiniGPT-v2-7B,
+              InternVL2-8B, and MiniCPM-V2.6-7B.<br>
+
+              We evaluate all data under a zero-shot setting. This setting enables the assessment of the generalization ability and
+              cross-task performance of metaphors in meme offensiveness detection. To evaluate the performance of VLMs, we design
+              three comparative experiments. The overall experimental process is shown in Figure 4. The evaluation benchmarks include
+              the following:<br>
+              
+              (1) <strong>Baseline</strong> : We evaluate the VLMs using only the original meme features to assess the fundamental performance of VLMs in
+              meme offensiveness detection.<br>
+              (2) <strong>Metaphor Thought Chain (MCT)</strong> : In this setup, VLMs are required to first analyze metaphorical information within the
+              meme before performing offensiveness detection. This experiment explores whether VLMs can correctly understand
+              metaphorical expressions, and how this understanding influences offensiveness detection.<br>
+              (3) <strong>Metaphor Information Augmentation (MIA)</strong> : Based on the original meme features, we further incorporate manually
+              annotated metaphorical content to assist VLMs in offensiveness detection.<br>
+              Through the above experiments, we not only evaluate the actual performance of current VLMs in meme offensiveness
+              detection, but also analyze their ability to understand metaphors in memes, laying a foundation for deeper meme
+              understanding by VLMs.<br><br>
+
+              <img id="pipeline" width="105%" src="static/images/F4.png">
+          </div>
+          </p>
+        </div>
+        </b>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="Evaluation">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+        <h2 class="title is-3"> <span class="rainbow-text">Evaluation</span></h2>
+      </div>
+    </div>
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="content has-text-justified">
+            <p>
+              <strong>In the offensiveness detection task</strong>, MiniGPT-v2 achieves the best performance after introducing
+              manually annotated metaphorical content. LLaVA-v1.5 shows a significant improvement under the MCT setting, primarily due
+              to its tendency to adopt non-offensive descriptions when analyzing metaphors, which helps correct a large number of
+              memes that were previously misclassified as offensive. Qwen-VL-Chat performs worse than the baseline in both MCT and MIA
+              settings. We observe that Qwen-VL-Chat tends to classify most memes as offensive, and this bias is further amplified
+              after metaphorical content is introduced. Overall, MIA improves their performance in offensiveness detection task.<br>
+
+              <strong>In the other three tasks</strong>, all models perform better under the MIA setting compared to the baseline.
+              However, their performance under the MCT setting is relatively unstable. Our experiments reveal that VLMs primarily
+              focus on the visual content of memes when analyzing metaphors, failing to effectively incorporate textual information
+              for metaphorical reasoning. This introduces noise into the detection process and consequently affects the recognition
+              performance.<br>
+
+              <strong>From the average scores of the overall results</strong>, we observe that manually annotated metaphorical content
+              can effectively enhance model performance in meme offensiveness detection. However, due to the poor performance of
+              Qwen-VL-Chat in the offensiveness detection task, the overall average improvement is relatively limited. Under the MCT
+              setting, we find that most models fail to accurately understand the metaphorical expressions embedded in memes,
+              resulting in incorrect metaphorical content that misleads the final prediction and degrades performance compared to the
+              baseline. This indicates that current models lack the capability to comprehend metaphorical expressions.<br><br>
+
+              <img id="pipeline" width="105%" src="static/images/T2.png">
+          </div>
+          </p>
+        </div>
+        </b>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="Conclusion">
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3"> <span class="rainbow-text">Conclusion</span></h2>
+    </div>
+  </div>
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <div class="content has-text-justified">
+          <p>
+            We propose a novel metaphor benchmark and a metaphor-enriched offensive meme dataset, MetaOff-Meme. MetaOff-Meme
+            provides detailed metaphorical annotations and offensive labels for memes. It presents significant challenges to
+            existing VLMs, as they must accurately comprehend the underlying metaphorical information to correctly identify
+            offensive content in memes. Experimental results from SOTA VLMs reveal that these models still face limitations in meme
+            offensiveness detection. Our work introduces rich metaphorical information into offensive memes, paving a new path for
+            advancing meme offensiveness detection. We hope that our dataset, novel benchmarks, and research insights will serve as
+            valuable resources for researchers in related fields.<br><br>
+            <centering>
+              <div style="text-align: center;">
+                <!-- <img id="teaser" width="105%" src="static/images/visualization.png"> -->
+              </div>
+          </p>
+        </div>
+        </b>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- <section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre>
+      <code>
+          @article{park2021nerfies,
+          author    = {Park, Keunhong and Sinha, Utkarsh and Barron, Jonathan T. and Bouaziz, Sofien and Goldman, Dan B and Seitz, Steven M. and Martin-Brualla, Ricardo},
+          title     = {Nerfies: Deformable Neural Radiance Fields},
+          journal   = {ICCV},
+          year      = {2021},}
+      </code>
+    </pre>
+  </div>
+</section> -->
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <!-- <a class="icon-link"
+         href="./static/videos/nerfies_paper.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a> -->
+      <a class="icon-link" href="https://github.com/MeiZhiyuan88666/MateOff_Meme" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+              href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+              Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <!-- <p>
+            This means you are free to borrow the <a
+              href="https://github.com/nerfies/nerfies.github.io">source code</a> of this website,
+            we just ask that you link back to this page in the footer.
+            Please remember to remove the analytics code included in the header of the website which
+            you do not want on your website.
+          </p> -->
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
